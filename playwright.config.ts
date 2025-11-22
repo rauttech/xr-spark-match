@@ -11,6 +11,15 @@ export default defineConfig({
         baseURL: 'https://localhost:3000',
         trace: 'on-first-retry',
         ignoreHTTPSErrors: true,
+        headless: process.env.USE_EMULATOR ? false : true,
+        launchOptions: process.env.USE_EMULATOR ? {
+            devtools: true,
+            args: [
+                `--disable-extensions-except=/Users/deepakraut/Library/Application Support/Google/Chrome/Default/Extensions/cgffilbpcibhmcfbgggfhfolhkfbhmik/1.5.0_0`,
+                `--load-extension=/Users/deepakraut/Library/Application Support/Google/Chrome/Default/Extensions/cgffilbpcibhmcfbgggfhfolhkfbhmik/1.5.0_0`,
+                '--enable-features=WebXR,OpenXR'
+            ]
+        } : undefined,
     },
     projects: [
         {

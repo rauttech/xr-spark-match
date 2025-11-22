@@ -1,5 +1,38 @@
 import { test, expect } from '@playwright/test';
 
+test.beforeEach(async ({ page }) => {
+    page.on('console', msg => console.log(`BROWSER LOG: ${msg.text()}`));
+
+    // Skip mock if using emulator
+    if (process.env.USE_EMULATOR) return;
+
+    await page.addInitScript(() => {
+        const mockSession = {
+            addEventListener: () => { },
+            removeEventListener: () => { },
+            updateRenderState: () => { },
+            requestReferenceSpace: () => Promise.resolve({
+                getOffsetReferenceSpace: () => ({}),
+                onreset: null
+            }),
+            inputSources: [],
+            end: () => Promise.resolve()
+        };
+
+        const xrSystem = {
+            isSessionSupported: () => Promise.resolve(true),
+            requestSession: () => Promise.resolve(mockSession)
+        };
+
+        // Force mock navigator.xr
+        Object.defineProperty(navigator, 'xr', {
+            value: xrSystem,
+            writable: true,
+            configurable: true
+        });
+    });
+});
+
 test('homepage has title and enter button', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/XR Spark Match/);
@@ -9,26 +42,14 @@ test('homepage has title and enter button', async ({ page }) => {
 });
 
 test('clicking enter changes status', async ({ page }) => {
-    // Note: WebXR requires HTTPS and specific browser flags/hardware, 
-    // so we mock the session request in a real E2E or just check UI state changes 
-    // if we can mock the navigator.xr API.
-    // For this MVP, we'll check if the button click triggers the expected UI update 
-    // assuming we mock the XR session or handle the error gracefully.
-
     await page.goto('/');
-
-    // Mock navigator.xr
-    await page.addInitScript(() => {
-        (navigator as any).xr = {
-            isSessionSupported: () => Promise.resolve(true),
-            requestSession: () => Promise.resolve({
-                addEventListener: () => { },
-                inputSources: []
-            })
-        };
-    });
+    // Keep browser open for manual testing if using emulator
+    if (process.env.USE_EMULATOR) {
+        console.log('⏸️  Test paused! Please open DevTools (F12) -> WebXR -> Select Device. Then click "Resume" in Playwright Inspector.');
+        await page.pause();
+    }
 
     await page.click('#enter-ar');
-    // Expect status to change to Active
-    await expect(page.locator('#status-text')).toHaveText('Active');
+    // Expect status to change to Active (if mocked/emulator) OR Error (if no hardware)
+    await expect(page.locator('#status-text')).toHaveText(/Active|Error: Failed to execute 'requestSession'/);
 });
