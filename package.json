@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
+    "test:emulator": "USE_EMULATOR=true playwright test",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.{ts,css,html}\"",
     "prepare": "husky install"

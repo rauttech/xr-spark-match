@@ -1,23 +1,11 @@
 import { test, expect } from '@playwright/test';
 
-test('homepage has title and enter button', async ({ page }) => {
-    await page.goto('/');
-    await expect(page).toHaveTitle(/XR Spark Match/);
-    const button = page.locator('#enter-ar');
-    await expect(button).toBeVisible();
-    await expect(button).toHaveText('Enter AR Match Mode');
-});
+test.beforeEach(async ({ page }) => {
+    page.on('console', msg => console.log(`BROWSER LOG: ${msg.text()}`));
 
-test('clicking enter changes status', async ({ page }) => {
-    // Note: WebXR requires HTTPS and specific browser flags/hardware, 
-    // so we mock the session request in a real E2E or just check UI state changes 
-    // if we can mock the navigator.xr API.
-    // For this MVP, we'll check if the button click triggers the expected UI update 
-    // assuming we mock the XR session or handle the error gracefully.
+    // Skip mock if using emulator
+    if (process.env.USE_EMULATOR) return;
 
-    await page.goto('/');
-
-    // Mock navigator.xr
     await page.addInitScript(() => {
         const mockSession = {
             addEventListener: () => { },
@@ -36,14 +24,32 @@ test('clicking enter changes status', async ({ page }) => {
             requestSession: () => Promise.resolve(mockSession)
         };
 
-        Object.defineProperty(Object.getPrototypeOf(navigator), 'xr', {
-            get: () => xrSystem,
+        // Force mock navigator.xr
+        Object.defineProperty(navigator, 'xr', {
+            value: xrSystem,
+            writable: true,
             configurable: true
         });
     });
+});
+
+test('homepage has title and enter button', async ({ page }) => {
+    await page.goto('/');
+    await expect(page).toHaveTitle(/XR Spark Match/);
+    const button = page.locator('#enter-ar');
+    await expect(button).toBeVisible();
+    await expect(button).toHaveText('Enter AR Match Mode');
+});
+
+test('clicking enter changes status', async ({ page }) => {
+    await page.goto('/');
+    // Keep browser open for manual testing if using emulator
+    if (process.env.USE_EMULATOR) {
+        console.log('⏸️  Test paused! Please open DevTools (F12) -> WebXR -> Select Device. Then click "Resume" in Playwright Inspector.');
+        await page.pause();
+    }
 
     await page.click('#enter-ar');
-    // Expect status to change to Active OR Error (if in headless without XR)
-    const status = page.locator('#status-text');
-    await expect(status).toHaveText(/Active|Error: Failed to execute 'requestSession'/);
+    // Expect status to change to Active (if mocked/emulator) OR Error (if no hardware)
+    await expect(page.locator('#status-text')).toHaveText(/Active|Error: Failed to execute 'requestSession'/);
 });

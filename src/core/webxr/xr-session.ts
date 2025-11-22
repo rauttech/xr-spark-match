@@ -12,14 +12,18 @@ export class XRSessionManager {
 
   async requestSession() {
     if (!navigator.xr) {
-      console.error("WebXR not supported");
+      console.error('WebXR not supported');
+      const status = document.getElementById('status-text');
+      if (status) status.innerText = 'WebXR not supported';
       return;
     }
 
     const isSupported = await navigator.xr.isSessionSupported("immersive-ar");
     if (!isSupported) {
-      console.warn("immersive-ar not supported, falling back or erroring");
-      // In a real app, handle fallback
+      console.warn("immersive-ar not supported");
+      const status = document.getElementById('status-text');
+      if (status) status.innerText = 'AR not supported (Check Emulator)';
+      return;
     }
 
     const session = await navigator.xr.requestSession("immersive-ar", {
