@@ -4,9 +4,6 @@ import { SceneInit } from "./core/webxr/scene-init";
 import { Renderer } from "./scene/renderer";
 import { CardManager } from "./scene/card-manager";
 import { GestureEngine } from "./gestures/gesture-engine";
-import { MatchEngine } from "./services/match-engine";
-import { MockProfiles } from "./services/mock-profiles";
-import { SparkManager } from "./scene/spark-manager";
 import { ZoneState } from "./state/zone-state";
 
 class App {
@@ -15,30 +12,35 @@ class App {
   private renderer: Renderer;
   private cardManager: CardManager;
   private gestureEngine: GestureEngine;
-  private sparkManager: SparkManager;
-  private matchEngine: MatchEngine;
   private zoneState: ZoneState;
 
   constructor() {
-    this.sceneInit = new SceneInit();
-    this.renderer = new Renderer(this.sceneInit.scene, this.sceneInit.camera);
-    this.xrSession = new XRSessionManager(
-      this.renderer.renderer,
-      this.sceneInit.camera,
-    );
+    // 1. Setup DOM and Canvas
+    const appDiv = document.getElementById("app");
+    const canvas = document.createElement("canvas");
+    appDiv?.appendChild(canvas);
 
-    this.matchEngine = new MatchEngine();
+    // 2. Initialize Core Systems
+    this.sceneInit = new SceneInit();
+    this.renderer = new Renderer(canvas);
+
+    // 3. Initialize Managers
     this.zoneState = new ZoneState();
-    this.sparkManager = new SparkManager(this.sceneInit.scene);
     this.cardManager = new CardManager(
       this.sceneInit.scene,
-      this.matchEngine,
-      this.sparkManager,
+      this.sceneInit.audioManager
     );
+
     this.gestureEngine = new GestureEngine(
       this.renderer.renderer,
       this.sceneInit.camera,
-      this.cardManager,
+      this.cardManager
+    );
+
+    // 4. Setup XR Session
+    this.xrSession = new XRSessionManager(
+      this.renderer.renderer,
+      this.sceneInit.camera,
     );
 
     this.init();
@@ -59,12 +61,8 @@ class App {
   private async startSession() {
     try {
       await this.xrSession.requestSession();
-      document.getElementById("status-text")!.innerText = "Active";
+      // Status update is handled in XRSessionManager now
       document.getElementById("enter-ar")!.style.display = "none";
-
-      // Initial population
-      const profiles = MockProfiles.generate(5);
-      this.cardManager.initializeCards(profiles);
     } catch (e: any) {
       console.error("Failed to start session:", e);
       document.getElementById("status-text")!.innerText = "Error: " + e.message;
@@ -72,18 +70,20 @@ class App {
   }
 
   private update(time: number, frame?: XRFrame) {
+    // Render Scene
+    this.renderer.render(this.sceneInit.scene, this.sceneInit.camera);
+
     if (!frame) return;
 
+    // Update Systems
     this.gestureEngine.update(frame);
-    this.cardManager.update(time, this.sceneInit.camera);
-    this.sparkManager.update(time);
-    this.zoneState.update(this.sceneInit.camera.position);
+    this.cardManager.update(time);
 
-    // Check for zone changes to regenerate profiles if needed
-    if (this.zoneState.hasChangedZone()) {
-      // Logic to add/remove cards based on zone could go here
-      console.log("Zone changed:", this.zoneState.currentZone);
-    }
+    // Simple Zone Logic (Mock)
+    const userPos = this.sceneInit.camera.position;
+    if (userPos.x > 2) this.zoneState.setZone("Tech Booth");
+    else if (userPos.x < -2) this.zoneState.setZone("Social Lounge");
+    else this.zoneState.setZone("Lobby");
   }
 }
 
