@@ -1,0 +1,46 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  background-color: #000; /* Fallback */
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+}
+
+#overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ui-panel {
+  position: absolute;
+  background: rgba(20, 20, 30, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  color: white;
+  pointer-events: auto;
+}
+
+#match-reasoning {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  text-align: center;
+  display: none;
+}
+
+#session-info {
+  top: 20px;
+  left: 20px;
+}

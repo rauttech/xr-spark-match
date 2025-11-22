@@ -1,0 +1,40 @@
+{
+  "name": "xr-spark-match",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.{ts,css,html}\"",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "three": "^0.160.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/three": "^0.160.0",
+    "@types/uuid": "^9.0.7",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vitejs/plugin-basic-ssl": "^1.0.1",
+    "eslint": "^8.54.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.1.0",
+    "playwright": "^1.40.0",
+    "@playwright/test": "^1.40.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,css,html}": "prettier --write"
+  }
+}
