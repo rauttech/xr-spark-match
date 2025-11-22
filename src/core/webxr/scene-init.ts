@@ -1,8 +1,10 @@
 import * as THREE from "three";
+import { AudioManager } from "../audio/audio-manager";
 
 export class SceneInit {
   public scene: THREE.Scene;
   public camera: THREE.PerspectiveCamera;
+  public audioManager: AudioManager;
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -22,5 +24,10 @@ export class SceneInit {
       20,
     );
     this.camera.position.set(0, 1.6, 0); // Default user height
+
+    this.audioManager = new AudioManager(this.camera);
+
+    // Enable transparency for passthrough
+    this.scene.background = null;
   }
 }

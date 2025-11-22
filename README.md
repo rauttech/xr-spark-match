@@ -42,39 +42,52 @@ flowchart TB
   K --> J
   P --> M
   P --> N
-  L --> B
-  M -->|unit tests| J
-  N -->|browser tests| D
-  O --> P
+graph TD
+    App[Main App] --> XR[XRSessionManager]
+    App --> Scene[SceneInit]
+    App --> Render[Renderer]
+    
+    Scene --> Audio[AudioManager]
+    Scene --> Cards[CardManager]
+    
+    Cards --> Spark[SparkManager]
+    Cards --> UI[CardUI]
+    Cards --> State[Persistence/ZoneState]
+    
+    App --> Gestures[GestureEngine]
+    Gestures --> Cards
+    
+    Services[Services] --> Match[MatchEngine]
+    Services --> Profiles[MockProfiles]
+    Cards --> Services
 ```
 
-## Prerequisites
+## 🛠 Setup & Run
 
-Before running the app, you must have **Node.js** installed.
-1. Download and install from [nodejs.org](https://nodejs.org/).
-2. Verify installation in your terminal: `node -v` and `npm -v`.
-
-## Quick Start
-
-We've included a helper script to get you started easily:
-
-```bash
-./setup_and_run.sh
-```
-
-## Manual Setup
-
-1. **Install dependencies**:
+1. **Install Dependencies**
    ```bash
    npm install
    ```
 
-2. **Run Dev Server (HTTPS)**:
+2. **Run Development Server** (HTTPS enabled for WebXR)
    ```bash
    npm run dev
    ```
-   - The terminal will show a Local and Network URL.
-   - **On Quest**: Open the **Network** URL (e.g., `https://192.168.1.x:3000`).
+   Access at `https://localhost:5173` (accept self-signed cert).
+
+3. **Run Tests**
+   ```bash
+   npm run test:unit   # Vitest
+   npm run test:e2e    # Playwright
+   npm run test:emulator # Playwright with Immersive Web Emulator
+   ```
+
+## 🕶 Meta Quest Preview
+1. Ensure your Quest and PC are on the same network.
+2. Run `npm run dev -- --host`.
+3. Open Meta Quest Browser and navigate to the displayed IP address (e.g., `https://192.168.1.x:5173`).
+4. Click "Enter AR Match Mode".
+- **On Quest**: Open the **Network** URL (e.g., `https://192.168.1.x:3000`).
    - Accept the "Unsafe Certificate" warning (since we use a self-signed cert for dev).
 
 3. **Run Tests**:

@@ -1,29 +1,26 @@
-import * as THREE from "three";
-
-export enum Zone {
-  A = "A",
-  B = "B",
-  C = "C",
-}
+export type ZoneType = "Lobby" | "Tech Booth" | "Social Lounge" | "Stage";
 
 export class ZoneState {
-  public currentZone: Zone = Zone.A;
-  private lastZone: Zone = Zone.A;
+  private currentZone: ZoneType = "Lobby";
+  private listeners: ((zone: ZoneType) => void)[] = [];
 
-  update(userPosition: THREE.Vector3) {
-    this.lastZone = this.currentZone;
-
-    // Simple zonal logic based on X position
-    if (userPosition.x < -2) {
-      this.currentZone = Zone.B;
-    } else if (userPosition.x > 2) {
-      this.currentZone = Zone.C;
-    } else {
-      this.currentZone = Zone.A;
+  setZone(zone: ZoneType) {
+    if (this.currentZone !== zone) {
+      this.currentZone = zone;
+      console.log(`Entered Zone: ${zone}`);
+      this.notifyListeners();
     }
   }
 
-  hasChangedZone(): boolean {
-    return this.currentZone !== this.lastZone;
+  getZone(): ZoneType {
+    return this.currentZone;
+  }
+
+  addListener(callback: (zone: ZoneType) => void) {
+    this.listeners.push(callback);
+  }
+
+  private notifyListeners() {
+    this.listeners.forEach(cb => cb(this.currentZone));
   }
 }

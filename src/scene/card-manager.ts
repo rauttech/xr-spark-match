@@ -1,94 +1,101 @@
 import * as THREE from "three";
-import { Profile } from "../services/mock-profiles";
-import { MatchEngine } from "../services/match-engine";
-import { SparkManager } from "./spark-manager";
+import { MockProfiles } from "../services/mock-profiles";
 import { CardUI } from "../components/card-ui";
+import { SparkManager } from "./spark-manager";
+import { AudioManager } from "../core/audio/audio-manager";
+import { PersistenceManager } from "../state/persistence";
+import { ZoneState } from "../state/zone-state";
 
 export class CardManager {
   private scene: THREE.Scene;
-  private cards: Map<string, THREE.Group> = new Map();
-  private profiles: Map<string, Profile> = new Map();
-  private matchEngine: MatchEngine;
+  private cards: THREE.Group[] = [];
   private sparkManager: SparkManager;
+  private audioManager: AudioManager;
+  private zoneState: ZoneState;
 
-  constructor(
-    scene: THREE.Scene,
-    matchEngine: MatchEngine,
-    sparkManager: SparkManager,
-  ) {
+  constructor(scene: THREE.Scene, audioManager: AudioManager) {
     this.scene = scene;
-    this.matchEngine = matchEngine;
-    this.sparkManager = sparkManager;
+    this.audioManager = audioManager;
+    this.sparkManager = new SparkManager(scene);
+    this.zoneState = new ZoneState();
+
+    // Load saved matches if any (for MVP just logging count)
+    const saved = PersistenceManager.loadMatches();
+    if (saved.length > 0) {
+      console.log(`Loaded ${saved.length} saved matches.`);
+    }
+
+    this.spawnCards();
   }
 
-  initializeCards(profiles: Profile[]) {
-    // Clear existing
-    this.cards.forEach((c) => this.scene.remove(c));
-    this.cards.clear();
-    this.profiles.clear();
-
+  spawnCards() {
+    const profiles = MockProfiles.generate(5);
     profiles.forEach((profile, index) => {
       const card = CardUI.createCard(profile);
 
-      // Position in a circle around user
-      const angle = (index / profiles.length) * Math.PI * 2;
-      const radius = 2; // 2 meters
+      // Position in a semi-circle
+      const angle = (index - 2) * 0.5;
+      const radius = 1.5;
       card.position.set(
-        Math.cos(angle) * radius,
-        1.6,
         Math.sin(angle) * radius,
+        1.6, // Eye level
+        -Math.cos(angle) * radius
       );
-      card.lookAt(0, 1.6, 0); // Look at user
 
+      card.lookAt(0, 1.6, 0);
       this.scene.add(card);
-      this.cards.set(profile.id, card);
-      this.profiles.set(profile.id, profile);
+      this.cards.push(card);
     });
   }
 
-  update(time: number, camera: THREE.Camera) {
-    // Float animation
-    this.cards.forEach((card, id) => {
-      card.position.y =
-        1.6 +
-        Math.sin(time * 0.001 + parseFloat(id.charCodeAt(0).toString())) * 0.1;
+  update(time: number) {
+    this.cards.forEach(card => {
+      CardUI.update(card, time);
     });
-
-    this.checkProximityForSparks();
+    this.sparkManager.update(time);
+    this.checkProximity();
   }
 
-  private checkProximityForSparks() {
-    const cardArray = Array.from(this.cards.values());
-    const ids = Array.from(this.cards.keys());
-
-    for (let i = 0; i < cardArray.length; i++) {
-      for (let j = i + 1; j < cardArray.length; j++) {
-        const c1 = cardArray[i];
-        const c2 = cardArray[j];
+  checkProximity() {
+    // Simple O(N^2) check for MVP
+    for (let i = 0; i < this.cards.length; i++) {
+      for (let j = i + 1; j < this.cards.length; j++) {
+        const c1 = this.cards[i];
+        const c2 = this.cards[j];
         const dist = c1.position.distanceTo(c2.position);
 
-        if (dist < 0.8) {
-          const p1 = this.profiles.get(ids[i])!;
-          const p2 = this.profiles.get(ids[j])!;
-          const score = this.matchEngine.calculateCompatibility(p1, p2);
-
-          if (score > 85) {
-            this.sparkManager.triggerSpark(c1.position, c2.position);
+        if (dist < 0.5) {
+          // Trigger spark if close
+          this.sparkManager.triggerSpark(c1.position, c2.position);
+          // Play sound (debounced in real app, simple for MVP)
+          if (Math.random() > 0.95) { // Reduce frequency
+            this.audioManager.playSparkSound(c1.position);
           }
         }
       }
     }
   }
 
-  getCardMesh(id: string) {
-    return this.cards.get(id);
+  // Called by GestureEngine
+  handleHover(card: THREE.Group, isHovered: boolean) {
+    const wasHovered = card.userData.isHovered;
+    CardUI.setHover(card, isHovered);
+    if (isHovered && !wasHovered) {
+      this.audioManager.playHoverSound(card.position);
+    }
   }
 
-  getAllCards() {
-    return Array.from(this.cards.values());
+  handleGrab(card: THREE.Group, isGrabbed: boolean) {
+    card.userData.isGrabbed = isGrabbed;
+    if (isGrabbed) {
+      // Visual feedback for grab (e.g. shrink slightly or glow)
+      card.scale.set(0.9, 0.9, 0.9);
+    } else {
+      card.scale.set(1, 1, 1);
+    }
   }
 
-  getProfile(id: string) {
-    return this.profiles.get(id);
+  getCards() {
+    return this.cards;
   }
 }

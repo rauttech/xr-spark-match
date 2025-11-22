@@ -36,6 +36,9 @@ export class XRSessionManager {
     this.renderer.xr.setReferenceSpaceType("local-floor");
     await this.renderer.xr.setSession(session);
 
+    const status = document.getElementById("status-text");
+    if (status) status.innerText = "Active";
+
     session.addEventListener("end", () => {
       this.currentSession = null;
       document.getElementById("status-text")!.innerText = "Ended";

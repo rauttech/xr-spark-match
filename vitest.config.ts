@@ -2,8 +2,8 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
     test: {
+        environment: 'jsdom',
         globals: true,
-        environment: 'node', // Using node for logic tests, jsdom for component/scene if needed
-        include: ['tests/unit/**/*.test.ts'],
+        include: ['tests/unit/**/*.{test,spec}.ts'],
     },
 });
