@@ -23,40 +23,65 @@ export class AudioManager {
             const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
             this.buffers.set(name, audioBuffer);
         } catch (e) {
-            console.warn(`AudioManager: Failed to load sound "${name}" from ${url}. Using fallback.`);
-            this.generateFallbackSound(name);
+            console.warn(`AudioManager: Failed to load sound "${name}" from ${url}.`);
         }
     }
 
-    private generateFallbackSound(name: string) {
-        // Create a simple beep for fallback
-        const sampleRate = this.audioContext.sampleRate;
-        const duration = 0.1;
-        const frameCount = sampleRate * duration;
-        const buffer = this.audioContext.createBuffer(1, frameCount, sampleRate);
-        const data = buffer.getChannelData(0);
+    // Dynamic synthesis instead of static buffers for better control
+    playNote(frequency: number, type: OscillatorType, duration: number, volume: number = 0.1) {
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
 
-        for (let i = 0; i < frameCount; i++) {
-            // Simple sine wave
-            data[i] = Math.sin(i * 2 * Math.PI * 440 / sampleRate);
-        }
-        this.buffers.set(name, buffer);
+        osc.type = type;
+        osc.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+
+        // Envelope to avoid clicks
+        gain.gain.setValueAtTime(0, this.audioContext.currentTime);
+        gain.gain.linearRampToValueAtTime(volume, this.audioContext.currentTime + 0.01); // Attack
+        gain.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + duration); // Decay
+
+        osc.connect(gain);
+        gain.connect(this.audioContext.destination);
+
+        osc.start();
+        osc.stop(this.audioContext.currentTime + duration);
     }
 
-    play(name: string): void {
-        const buffer = this.buffers.get(name);
-        if (!buffer) {
-            console.warn(`AudioManager: buffer "${name}" not loaded`);
-            return;
-        }
-        const source = this.audioContext.createBufferSource();
-        source.buffer = buffer;
-        source.connect(this.audioContext.destination);
-        source.start(0);
+    playMatchSound() {
+        // Harmonious chord (C Major)
+        this.playNote(523.25, 'sine', 0.4, 0.1); // C5
+        setTimeout(() => this.playNote(659.25, 'sine', 0.4, 0.1), 50); // E5
+        setTimeout(() => this.playNote(783.99, 'sine', 0.6, 0.1), 100); // G5
     }
 
-    // Convenience methods
-    playMatchSound() { this.play('spark'); }
-    playHoverSound() { this.play('hover'); }
-    playSwipeSound() { this.play('swipe'); } // Ensure 'swipe' is loaded or falls back
+    playHoverSound() {
+        // Subtle, low-pitch "pop" or "tick"
+        this.playNote(300, 'triangle', 0.05, 0.05);
+    }
+
+    playSwipeSound() {
+        // Whoosh effect (simulated with slide)
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+
+        osc.frequency.setValueAtTime(200, this.audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(600, this.audioContext.currentTime + 0.2);
+
+        gain.gain.setValueAtTime(0, this.audioContext.currentTime);
+        gain.gain.linearRampToValueAtTime(0.1, this.audioContext.currentTime + 0.05);
+        gain.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 0.2);
+
+        osc.connect(gain);
+        gain.connect(this.audioContext.destination);
+
+        osc.start();
+        osc.stop(this.audioContext.currentTime + 0.2);
+    }
+
+    // Deprecated but kept for compatibility if needed
+    play(name: string) {
+        if (name === 'spark') this.playMatchSound();
+        else if (name === 'hover') this.playHoverSound();
+        else if (name === 'swipe') this.playSwipeSound();
+    }
 }

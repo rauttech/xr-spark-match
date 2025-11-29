@@ -38,10 +38,44 @@ export class CardUI {
     // Text Styling
     ctx.textAlign = "center";
 
-    // Name
+    // Profile Image or Name
+    if (profile.imageUrl) {
+      const img = new Image();
+      img.src = profile.imageUrl;
+      // We need to wait for image to load, but since this is synchronous createCard,
+      // we might need to handle it. For MVP, we'll assume it loads or use a callback pattern if needed.
+      // However, canvas drawImage needs loaded image.
+      // A better approach for Three.js texture is to load texture directly.
+      // But here we are drawing to canvas.
+      // Let's try to draw it if cached, or use a placeholder and update later?
+      // For simplicity in this MVP, we will use a Promise-based loader or just standard Three.js TextureLoader for the image plane
+      // and overlay it?
+      // Actually, let's just draw a circle with the image on the canvas.
+      // Since we can't await here easily without changing signature, we'll use a trick:
+      // We'll return the group, and update the canvas when image loads.
+
+      img.onload = () => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(512, 200, 120, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(img, 392, 80, 240, 240);
+        ctx.restore();
+        texture.needsUpdate = true;
+      };
+    } else {
+      // Fallback to text initials or just name
+      ctx.fillStyle = "#1a1a1a";
+      ctx.font = "bold 130px Inter, Arial";
+      ctx.fillText(profile.name, 512, 250);
+    }
+
+    // Name (below image if image exists)
     ctx.fillStyle = "#1a1a1a";
-    ctx.font = "bold 130px Inter, Arial";
-    ctx.fillText(profile.name, 512, 250);
+    ctx.font = "bold 100px Inter, Arial";
+    ctx.fillText(profile.name, 512, 380);
+
 
     // Role
     ctx.fillStyle = "#4a4a4a";
@@ -91,6 +125,40 @@ export class CardUI {
     textMesh.position.z = 0.01;
     textMesh.position.y = 0.0;
     group.add(textMesh);
+
+    // Close Button (Visual)
+    // We'll draw a circle with an 'X' at the top right
+    const closeX = 924 - 40;
+    const closeY = 50 + 40;
+    const closeRadius = 40;
+
+    ctx.fillStyle = "#ff5252";
+    ctx.beginPath();
+    ctx.arc(closeX, closeY, closeRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(closeX - 15, closeY - 15);
+    ctx.lineTo(closeX + 15, closeY + 15);
+    ctx.moveTo(closeX + 15, closeY - 15);
+    ctx.lineTo(closeX - 15, closeY + 15);
+    ctx.stroke();
+
+    // Store close button area in userData for raycasting
+    // Normalized coordinates (0-1) relative to the plane
+    // Plane is 0.5 x 0.7
+    // Canvas is 1024 x 1400
+    // Close button center is at (closeX, closeY)
+    // We need to map this to UV space (0,0 is bottom-left usually in Three.js UVs, but canvas 0,0 is top-left)
+    // UV y = 1 - (y / height)
+    // UV x = x / width
+    group.userData.closeButtonUV = {
+      x: closeX / 1024,
+      y: 1 - (closeY / 1400),
+      radius: closeRadius / 1024 // Approximate radius in UV space (width-wise)
+    };
 
     return group;
   }

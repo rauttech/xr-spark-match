@@ -10,9 +10,48 @@ export interface Profile {
   tags: string[];
   compatibilityScore: number; // 0 to 100
   color: string;
+  imageUrl?: string;
 }
 
 export class MockProfiles {
+  private static specificProfiles: Profile[] = [
+    {
+      id: "deepak-raut",
+      name: "Deepak Raut",
+      role: "DevOps & XR-AI Automation",
+      domain: "DevOps/XR",
+      experienceLevel: "Expert",
+      location: "Remote",
+      tags: ["Azure", "AWS", "Python", "Docker", "K8s", "Meta XR", "AI"],
+      compatibilityScore: 98,
+      color: "#FF7A00", // Orange
+      imageUrl: "/assets/profiles/deepak.jpg"
+    },
+    {
+      id: "marlaina-love",
+      name: "Marlaina Love",
+      role: "Creative XR Technologist",
+      domain: "XR/Spatial",
+      experienceLevel: "Lead",
+      location: "Remote",
+      tags: ["Web3", "Spatial Computing", "Meta XR", "AI", "Storytelling"],
+      compatibilityScore: 96,
+      color: "#FFE100", // Yellow
+      imageUrl: "/assets/profiles/marlaina.jpg"
+    },
+    {
+      id: "serena-li",
+      name: "Serena Li",
+      role: "Backend & Cloud Engineer",
+      domain: "Backend/Cloud",
+      experienceLevel: "Senior",
+      location: "Remote",
+      tags: ["Python", "Flask", "AWS", "Scalability", "Security", "XR Backend"],
+      compatibilityScore: 95,
+      color: "#A8FF5A", // Light Green
+    }
+  ];
+
   private static names = [
     "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Hank", "Ivy", "Jack"
   ];
@@ -33,8 +72,14 @@ export class MockProfiles {
   ];
 
   static generate(count: number): Profile[] {
-    const profiles: Profile[] = [];
-    for (let i = 0; i < count; i++) {
+    const profiles: Profile[] = [...this.specificProfiles];
+
+    if (count <= profiles.length) {
+      return profiles.slice(0, count);
+    }
+
+    const profilesToGenerate = count - profiles.length;
+    for (let i = 0; i < profilesToGenerate; i++) {
       profiles.push({
         id: uuidv4(),
         name: this.names[Math.floor(Math.random() * this.names.length)],
@@ -52,5 +97,9 @@ export class MockProfiles {
       });
     }
     return profiles;
+  }
+
+  static getById(id: string): Profile | undefined {
+    return this.specificProfiles.find(p => p.id === id);
   }
 }

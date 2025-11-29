@@ -55,12 +55,38 @@ class App {
     new QRScanner(async (data: string) => {
       try {
         const profile = await ProfileService.getProfile(data);
-        // Add the scanned profile as a new card
+        // Add the scanned profile as a new card (or reveal if hidden)
         this.cardManager.addProfileCard(profile);
       } catch (e) {
         console.error('Failed to fetch profile for QR data', e);
       }
     });
+
+    // Preload specific profiles (Deepak, Marlaina, Serena) in hidden state
+    this.preloadSpecificProfiles();
+  }
+
+  private async preloadSpecificProfiles() {
+    // IDs of the specific profiles we want to hide in background
+    const ids = ["deepak-raut", "marlaina-love", "serena-li"];
+    const profiles = [];
+
+    for (const id of ids) {
+      try {
+        // We use MockProfiles directly here to avoid the simulated delay of ProfileService for preloading
+        // or we can use ProfileService if we want to test that path.
+        // Let's use ProfileService but parallelize
+        const p = await ProfileService.getProfile(id);
+        profiles.push(p);
+      } catch (e) {
+        console.warn(`Failed to preload profile ${id}`);
+      }
+    }
+
+    if (profiles.length > 0) {
+      this.cardManager.preloadProfiles(profiles);
+      console.log(`Preloaded ${profiles.length} profiles in background.`);
+    }
   }
 
   private init() {
