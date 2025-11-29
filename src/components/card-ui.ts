@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { getMatchColor } from "../utils/color";
 import { Profile } from "../services/mock-profiles";
 
 export class CardUI {
@@ -9,7 +10,7 @@ export class CardUI {
     // Background (Glass-like effect)
     const geometry = new THREE.PlaneGeometry(0.5, 0.7); // Slightly larger
     const material = new THREE.MeshBasicMaterial({
-      color: profile.color,
+      color: getMatchColor(profile.compatibilityScore),
       side: THREE.DoubleSide,
       transparent: true,
       opacity: 0.85, // More opaque for readability
@@ -55,8 +56,9 @@ export class CardUI {
     ctx.lineTo(924, 450);
     ctx.stroke();
 
-    // Match Score
-    ctx.fillStyle = profile.compatibilityScore > 80 ? "#e91e63" : "#2196f3";
+    // Match Score (advanced colour)
+    const matchHex = getMatchColor(profile.compatibilityScore);
+    ctx.fillStyle = matchHex;
     ctx.font = "bold 110px Inter, Arial";
     ctx.fillText(`Match: ${profile.compatibilityScore}%`, 512, 600);
 
@@ -71,7 +73,7 @@ export class CardUI {
       ctx.font = "60px Inter, Arial";
       ctx.fillStyle = "#333333";
       let y = 800;
-      profile.tags.forEach(tag => {
+      profile.tags.forEach((tag: string) => {
         ctx.fillText(`#${tag}`, 512, y);
         y += 80;
       });
