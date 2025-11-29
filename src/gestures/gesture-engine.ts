@@ -82,11 +82,29 @@ export class GestureEngine {
                 const cardGroup = object.parent as THREE.Group;
                 this.cardManager.handleHover(cardGroup, true);
 
-                // Simulate Pinch/Grab (Select event usually handles this, but logic here for custom pinch)
+                // Check for Close Button Click (on trigger press)
                 if (session.inputSources[0] && session.inputSources[0].gamepad) {
-                  // Check gamepad buttons for trigger/squeeze if available
                   const gamepad = session.inputSources[0].gamepad;
                   if (gamepad.buttons[0].pressed) {
+                    // Check if hitting close button
+                    const uv = intersects[0].uv;
+                    const closeUV = cardGroup.userData.closeButtonUV;
+
+                    if (uv && closeUV) {
+                      // UV distance check (simple circle check in UV space)
+                      // Note: UV aspect ratio might differ from physical, but good enough for MVP
+                      const dx = uv.x - closeUV.x;
+                      const dy = uv.y - closeUV.y;
+                      const dist = Math.sqrt(dx * dx + dy * dy);
+
+                      // Radius in UV space is approx 40/1024 ~= 0.04
+                      if (dist < 0.05) {
+                        // Clicked Close!
+                        this.cardManager.handleClose(cardGroup);
+                        return; // Stop processing grab
+                      }
+                    }
+
                     if (!this.isPinching) {
                       this.isPinching = true;
                       this.grabbedObject = cardGroup;

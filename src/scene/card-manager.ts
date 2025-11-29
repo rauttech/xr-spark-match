@@ -26,21 +26,27 @@ export class CardManager {
       console.log(`Loaded ${saved.length} saved matches.`);
     }
 
-    this.spawnCards();
+    this.spawnCards(); // Spawn background profiles
   }
 
   spawnCards() {
-    const profiles = MockProfiles.generate(5);
-    profiles.forEach((profile, index) => {
+    // Generate enough random profiles to ensure we have 5 background cards after filtering
+    // We request 10, filter out specific ones, and take the first 5.
+    const allProfiles = MockProfiles.generate(10);
+    const backgroundProfiles = allProfiles
+      .filter(p => !["deepak-raut", "marlaina-love", "serena-li"].includes(p.id))
+      .slice(0, 5);
+
+    backgroundProfiles.forEach((profile, index) => {
       const card = CardUI.createCard(profile);
 
-      // Position in a semi-circle
-      const angle = (index - 2) * 0.5;
-      const radius = 1.5;
+      // Position in a semi-circle but further back
+      const angle = (index - 2) * 0.6; // Adjusted spread
+      const radius = 2.5; // Slightly closer than 3.0 for better visibility
       card.position.set(
         Math.sin(angle) * radius,
         1.6, // Eye level
-        -Math.cos(angle) * radius
+        -Math.cos(angle) * radius - 0.5
       );
 
       card.lookAt(0, 1.6, 0);
@@ -96,24 +102,67 @@ export class CardManager {
     }
   }
 
+  handleClose(card: THREE.Group) {
+    // Hide the card
+    card.visible = false;
+
+    // Reset position to hidden location just in case
+    card.position.set(0, 10, 5);
+
+    // Play sound
+    this.audioManager.playHoverSound(); // Use hover sound as 'close' feedback for now
+    console.log(`Closed card for profile: ${card.userData.profileId}`);
+  }
+
   /**
    * Add a new profile card based on a fetched Profile.
    * For MVP we map the Profile to the mock profile shape expected by CardUI.
    */
+  preloadProfiles(profiles: Profile[]) {
+    profiles.forEach((profile) => {
+      // Check if already exists to avoid duplicates
+      if (this.cards.find(c => c.userData.profileId === profile.id)) return;
+
+      const card = CardUI.createCard(profile);
+      // Position hidden in background (behind user and slightly up)
+      card.position.set(
+        (Math.random() - 0.5) * 4, // Random spread X
+        10, // High up (hidden)
+        5 // Behind user
+      );
+      card.visible = false; // Initially invisible
+
+      this.scene.add(card);
+      this.cards.push(card);
+    });
+  }
+
+  /**
+   * Add a new profile card based on a fetched Profile.
+   * If the card was preloaded, reveal it and move it to front.
+   */
   addProfileCard(profile: Profile) {
-    const mockProfile = {
-      id: profile.id,
-      name: profile.name,
-      role: "Attendee",
-      tags: profile.tags,
-      compatibilityScore: 80,
-      color: "hsl(200,70%,50%)",
-    } as any; // cast to any to satisfy CardUI type
-    const card = CardUI.createCard(mockProfile);
+    const existingCard = this.cards.find(c => c.userData.profileId === profile.id);
+
+    if (existingCard) {
+      // Reveal existing card
+      existingCard.visible = true;
+      // Animate to front (simple teleport for MVP, could be lerp)
+      existingCard.position.set(0, 1.6, -1.5); // Right in front
+      existingCard.lookAt(0, 1.6, 0);
+
+      // Play sound
+      this.audioManager.playMatchSound();
+      return;
+    }
+
+    // Fallback for non-preloaded profiles
+    const card = CardUI.createCard(profile);
     // Position the new card in front of the user at a default location
-    card.position.set(0, 1.6, -2);
+    card.position.set(0, 1.6, -1.5);
     this.scene.add(card);
     this.cards.push(card);
+    this.audioManager.playMatchSound();
   }
 
   getCards() {

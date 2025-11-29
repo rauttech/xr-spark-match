@@ -40,6 +40,12 @@ describe('GestureEngine', () => {
                 moveTo: vi.fn(),
                 lineTo: vi.fn(),
                 stroke: vi.fn(),
+                arc: vi.fn(),
+                fill: vi.fn(),
+                save: vi.fn(),
+                restore: vi.fn(),
+                clip: vi.fn(),
+                drawImage: vi.fn(),
             };
         }) as any;
 

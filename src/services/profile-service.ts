@@ -1,20 +1,20 @@
-// ProfileService – fetches profile data from backend API
+import { MockProfiles, Profile } from "./mock-profiles";
 
-export interface Profile {
-    id: string;
-    name: string;
-    avatarUrl: string;
-    tags: string[];
-    // Additional fields can be added as needed
-}
+export type { Profile };
 
 export class ProfileService {
     static async getProfile(id: string): Promise<Profile> {
-        const response = await fetch(`/api/profile/${id}`);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch profile with id ${id}`);
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const profile = MockProfiles.getById(id);
+        if (profile) {
+            return profile;
         }
-        const data = await response.json();
-        return data as Profile;
+
+        // If not found in specific profiles, generate a random one (fallback)
+        // In a real app, this would throw 404
+        console.warn(`Profile ${id} not found in specific list, generating random.`);
+        return MockProfiles.generate(1)[0];
     }
 }
