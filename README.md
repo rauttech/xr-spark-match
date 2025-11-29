@@ -1,108 +1,71 @@
-# XR Spark Match Mode
+# XR Spark Match - Meta Quest 3 WebXR
 
-WebXR MVP for floating profile cards and gesture-based matching.
+This project is a WebXR application designed for Meta Quest 3, utilizing the Immersive Web SDK for Passthrough and Camera Access features.
 
 ## Features
-- **Floating Cards**: 3-7 profile cards floating around the user.
-- **Hand Gestures**: AirTap, Pinch, Swipe (simulated).
-- **Spark Effect**: Visual feedback for high compatibility.
-- **Zone Awareness**: Dynamic updates based on user position.
 
-## Architecture
+- **WebXR Session**: Immersive AR session with local floor reference space.
+- **Passthrough**: Real-world background visibility using the Immersive Web SDK.
+- **QR Scanning**: Camera access to scan QR codes and display profile cards.
+- **3D UI**: Floating profile cards with interaction support.
 
-```mermaid
-flowchart TB
-  subgraph Browser
-    A[Main (index.html)]
-    B[main.ts]
-    C[Scene Manager]
-    D[XR Session (WebXR)]
-    E[Three.js Renderer]
-    F[UI Overlays / HUD]
-    G[Gesture Engine]
-    H[Card Manager]
-    I[Spark Manager]
-    J[Match Engine (mock)]
-    K[Zone State]
-  end
-  subgraph DevOps
-    L[Vite Dev Server (HTTPS)]
-    M[Vitest Unit Tests]
-    N[Playwright E2E Tests]
-    O[Husky + lint-staged]
-    P[GitHub Repo + Actions]
-  end
-  A --> B --> C
-  C --> D --> E
-  E --> H
-  H --> I
-  B --> F
-  B --> G --> H
-  H --> J
-  K --> J
-  P --> M
-  P --> N
-graph TD
-    App[Main App] --> XR[XRSessionManager]
-    App --> Scene[SceneInit]
-    App --> Render[Renderer]
-    
-    Scene --> Audio[AudioManager]
-    Scene --> Cards[CardManager]
-    
-    Cards --> Spark[SparkManager]
-    Cards --> UI[CardUI]
-    Cards --> State[Persistence/ZoneState]
-    
-    App --> Gestures[GestureEngine]
-    Gestures --> Cards
-    
-    Services[Services] --> Match[MatchEngine]
-    Services --> Profiles[MockProfiles]
-    Cards --> Services
+## Prerequisites
+
+- Node.js (v20+)
+- Meta Quest 3 Headset
+- Meta Quest Developer Hub (optional, for debugging)
+
+## Installation
+
+1.  Clone the repository.
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+## Development
+
+To start the local development server with SSL support (required for WebXR):
+
+```bash
+npm run dev
 ```
 
-## 🛠 Setup & Run
+This will start a Vite server. Ensure your computer and Quest 3 are on the same Wi-Fi network. Access the URL displayed in the terminal (e.g., `https://192.168.1.x:5173`) from the Meta Quest Browser.
 
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+**Note:** You may need to accept the self-signed certificate warning in the browser.
 
-2. **Run Development Server** (HTTPS enabled for WebXR)
-   ```bash
-   npm run dev
-   ```
-   Access at `https://localhost:5173` (accept self-signed cert).
+## Build
 
-3. **Run Tests**
-   ```bash
-   npm run test:unit   # Vitest
-   npm run test:e2e    # Playwright
-   npm run test:emulator # Playwright with Immersive Web Emulator
-   ```
+To build the project for production:
 
-## 🕶 Meta Quest Preview
-1. Ensure your Quest and PC are on the same network.
-2. Run `npm run dev -- --host`.
-3. Open Meta Quest Browser and navigate to the displayed IP address (e.g., `https://192.168.1.x:5173`).
-4. Click "Enter AR Match Mode".
-- **On Quest**: Open the **Network** URL (e.g., `https://192.168.1.x:3000`).
-   - Accept the "Unsafe Certificate" warning (since we use a self-signed cert for dev).
+```bash
+npm run build
+```
 
-3. **Run Tests**:
-   ```bash
-   npm run test:unit
-   npm run test:e2e
-   ```
+The output will be in the `dist` folder.
 
-## Tech Stack
-- TypeScript
-- Vite
-- Three.js
-- WebXR API
-- Vitest & Playwright
+## Deployment to Meta Quest
 
-## License & Author
-**Author**: Deepak Raghunath Raut
-**License**: MIT
+1.  **HTTPS Hosting**: The easiest way is to deploy the `dist` folder to a static host like GitHub Pages, Vercel, or Netlify. Ensure the site is served over HTTPS.
+2.  **Meta Quest Browser**: Open the deployed URL in the Meta Quest Browser.
+3.  **Permissions**:
+    - When prompted, allow "Immersive Web" or "VR" session.
+    - Allow "Camera Access" when requested for QR scanning.
+
+## Important Note on Immersive Web SDK
+
+This project uses a mock implementation of the Immersive Web SDK (`@iwsdk/core`) for build purposes.
+**To run on device with full functionality:**
+1.  Ensure you have the correct `@iwsdk/core` package installed or available in your environment.
+2.  Remove the alias in `vite.config.js` if you have the actual package installed.
+3.  If you are using a scaffolded project structure from `npm create @iwsdk@latest`, ensure the imports in `src/xr/passthrough.ts` and `src/xr/camera.ts` match your project's SDK location.
+
+## Project Structure
+
+- `src/main.ts`: Entry point.
+- `src/xr/xr-session.ts`: Manages WebXR session.
+- `src/xr/passthrough.ts`: Handles Passthrough layer.
+- `src/xr/camera.ts`: Manages Camera access.
+- `src/xr/qr-scanner.ts`: QR code scanning logic.
+- `src/xr/ui.ts`: 3D UI elements.
