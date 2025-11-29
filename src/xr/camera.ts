@@ -7,6 +7,7 @@ export class CameraManager {
 
     async requestCameraAccess() {
         try {
+            console.log('Requesting camera access...');
             // @ts-ignore
             this.cameraAccess = await IWSdk.camera.getCameraAccess({
                 format: 'rgba',
@@ -15,7 +16,7 @@ export class CameraManager {
             console.log('Camera access granted');
             return true;
         } catch (e) {
-            console.error('Failed to get camera access:', e);
+            console.error('Failed to get camera access. Ensure "Browser Camera Access" is enabled in Quest settings.', e);
             return false;
         }
     }

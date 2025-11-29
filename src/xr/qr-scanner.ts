@@ -23,29 +23,36 @@ export class QRScanner {
         this.onResultCallback = callback;
     }
 
-    private scanLoop() {
+    private lastScanTime = 0;
+    private scanInterval = 500; // Scan every 500ms
+
+    private scanLoop(time: number = 0) {
         if (!this.isScanning) return;
 
-        const cameraAccess = this.cameraManager.getCameraFrame();
-        if (cameraAccess && cameraAccess.onFrame) {
-            // Hypothetical API usage based on prompt
-            cameraAccess.onFrame((frameData: any) => {
-                if (!this.isScanning) return;
+        if (time - this.lastScanTime > this.scanInterval) {
+            this.lastScanTime = time;
+            const cameraAccess = this.cameraManager.getCameraFrame();
 
-                // Assuming frameData contains width, height, and data (Uint8ClampedArray)
-                // You might need to convert the texture or buffer here depending on SDK specifics
-                const { width, height, data } = frameData;
+            if (cameraAccess && cameraAccess.onFrame) {
+                // Hypothetical API usage based on prompt
+                cameraAccess.onFrame((frameData: any) => {
+                    if (!this.isScanning) return;
 
-                if (data && width && height) {
-                    const code = jsQR(data, width, height);
-                    if (code) {
-                        console.log('QR Code found:', code.data);
-                        if (this.onResultCallback) {
-                            this.onResultCallback(code.data);
+                    // Assuming frameData contains width, height, and data (Uint8ClampedArray)
+                    // You might need to convert the texture or buffer here depending on SDK specifics
+                    const { width, height, data } = frameData;
+
+                    if (data && width && height) {
+                        const code = jsQR(data, width, height);
+                        if (code) {
+                            console.log('QR Code found:', code.data);
+                            if (this.onResultCallback) {
+                                this.onResultCallback(code.data);
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
 
         requestAnimationFrame(this.scanLoop.bind(this));

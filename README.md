@@ -53,6 +53,15 @@ The output will be in the `dist` folder.
     - When prompted, allow "Immersive Web" or "VR" session.
     - Allow "Camera Access" when requested for QR scanning.
 
+## QR Scanning Best Practices
+
+To ensure optimal QR code scanning on Meta Quest 3:
+
+1.  **Lighting**: Ensure the physical QR code is well-lit. Avoid shadows or glare on the code.
+2.  **Distance**: Hold the QR code at a comfortable distance (30-50cm) from the headset.
+3.  **Permissions**: Verify that "Browser Camera Access" is enabled in the Quest settings (Settings > Apps > Permissions > Camera).
+4.  **Contrast**: Use high-contrast QR codes (black on white) for best results.
+
 ## Important Note on Immersive Web SDK
 
 This project uses a mock implementation of the Immersive Web SDK (`@iwsdk/core`) for build purposes.
