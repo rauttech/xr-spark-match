@@ -2,12 +2,11 @@ import * as THREE from "three";
 
 export class XRSessionManager {
   private renderer: THREE.WebGLRenderer;
-  private camera: THREE.PerspectiveCamera;
-  private currentSession: XRSession | null = null;
 
-  constructor(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera) {
+
+  constructor(renderer: THREE.WebGLRenderer) {
     this.renderer = renderer;
-    this.camera = camera;
+
   }
 
   async requestSession() {
@@ -18,21 +17,26 @@ export class XRSessionManager {
       return;
     }
 
-    const isSupported = await navigator.xr.isSessionSupported("immersive-ar");
-    if (!isSupported) {
-      console.warn("immersive-ar not supported");
-      const status = document.getElementById('status-text');
-      if (status) status.innerText = 'AR not supported (Check Emulator)';
-      return;
+    let sessionMode: XRSessionMode = "immersive-ar";
+    const isArSupported = await navigator.xr.isSessionSupported("immersive-ar");
+    if (!isArSupported) {
+      console.warn("immersive-ar not supported, falling back to immersive-vr");
+      const isVrSupported = await navigator.xr.isSessionSupported("immersive-vr");
+      if (!isVrSupported) {
+        const status = document.getElementById('status-text');
+        if (status) status.innerText = 'WebXR not supported';
+        return;
+      }
+      sessionMode = "immersive-vr";
     }
 
-    const session = await navigator.xr.requestSession("immersive-ar", {
-      requiredFeatures: ["local-floor", "hit-test", "hand-tracking"],
-      optionalFeatures: ["dom-overlay"],
+    const session = await navigator.xr.requestSession(sessionMode, {
+      requiredFeatures: ["local-floor", "hit-test"],
+      optionalFeatures: ["hand-tracking", "dom-overlay"],
       domOverlay: { root: document.getElementById("overlay")! },
     });
 
-    this.currentSession = session;
+
     this.renderer.xr.setReferenceSpaceType("local-floor");
     await this.renderer.xr.setSession(session);
 
@@ -40,7 +44,7 @@ export class XRSessionManager {
     if (status) status.innerText = "Active";
 
     session.addEventListener("end", () => {
-      this.currentSession = null;
+
       document.getElementById("status-text")!.innerText = "Ended";
       document.getElementById("enter-ar")!.style.display = "block";
     });

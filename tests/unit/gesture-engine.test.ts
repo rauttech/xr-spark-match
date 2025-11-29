@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as THREE from 'three';
 import { GestureEngine } from '../../src/gestures/gesture-engine';
 import { CardManager } from '../../src/scene/card-manager';
-import { AudioManager } from '../../src/core/audio/audio-manager';
+import { AudioManager } from '../../src/audio/audio-manager';
 
 // Mock dependencies
 const mockRenderer = {
@@ -11,12 +11,14 @@ const mockRenderer = {
     }
 } as any;
 
-const mockCamera = new THREE.PerspectiveCamera();
+
 const mockScene = new THREE.Scene();
 const mockAudioManager = {
+    play: vi.fn(),
+    load: vi.fn(),
     playHoverSound: vi.fn(),
-    playSparkSound: vi.fn(),
-    playMatchSound: vi.fn()
+    playMatchSound: vi.fn(),
+    playSwipeSound: vi.fn(),
 } as unknown as AudioManager;
 
 describe('GestureEngine', () => {
@@ -32,11 +34,17 @@ describe('GestureEngine', () => {
                 textAlign: '',
                 font: '',
                 fillText: vi.fn(),
+                strokeStyle: '',
+                lineWidth: 0,
+                beginPath: vi.fn(),
+                moveTo: vi.fn(),
+                lineTo: vi.fn(),
+                stroke: vi.fn(),
             };
         }) as any;
 
         cardManager = new CardManager(mockScene, mockAudioManager);
-        gestureEngine = new GestureEngine(mockRenderer, mockCamera, cardManager);
+        gestureEngine = new GestureEngine(mockRenderer, cardManager, mockAudioManager);
     });
 
     it('should detect swipe based on velocity', () => {

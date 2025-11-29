@@ -21,10 +21,12 @@ Build a WebXR MVP for "XR Spark Match Mode" on Meta Quest Browser, featuring flo
 
 | Feature | Status | Notes |
 | :--- | :--- | :--- |
-| **Card Visibility** | ⚠️ Low | Current text/UI is low resolution. **(Fixing now)** |
+| **Card Visibility** | ✅ Done | High-resolution canvas textures implemented. |
 | **Advanced Gestures** | ⏳ Basic | Complex gestures (Swipe/Pinch-Hold) are stubbed; needs refinement. |
 | **Real Passthrough** | 🔮 Sim | Relies on device capabilities; currently using `dom-overlay`. |
-| **Audio** | ❌ Missing | No sound effects for matches/sparks yet. |
+| **Audio** | ✅ Done | AudioManager implemented with placeholder sounds. |
+| **QR Scanning** | ⚠️ Proto | Prototype added; limited by WebXR privacy (must scan in 2D). |
+| **Camera Research** | ✅ Done | Documented in `docs/camera_feasibility.md`. |
 
 ## 📋 Requirements Comparison
 

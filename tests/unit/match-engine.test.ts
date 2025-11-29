@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { MatchEngine } from '../../src/services/match-engine';
 
 describe('MatchEngine', () => {
-    const engine = new MatchEngine();
+
 
     it('should calculate compatibility score within range', () => {
         const p1 = { tags: ['A', 'B'] } as any;

@@ -102,3 +102,7 @@ graph TD
 - Three.js
 - WebXR API
 - Vitest & Playwright
+
+## License & Author
+**Author**: Deepak Raghunath Raut
+**License**: MIT
