@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@iwsdk/core": "^0.2.2",
     "@types/uuid": "^10.0.0",
     "jsqr": "^1.4.0",
     "three": "^0.160.0",

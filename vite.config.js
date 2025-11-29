@@ -13,10 +13,6 @@ export default defineConfig({
             },
         },
     },
-    resolve: {
-        alias: {
-            '@iwsdk/core': '/src/xr/mock-sdk.ts'
-        }
-    },
+
     plugins: [mkcert()],
 });
