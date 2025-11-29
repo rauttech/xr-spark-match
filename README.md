@@ -49,9 +49,42 @@ The output will be in the `dist` folder.
 
 1.  **HTTPS Hosting**: The easiest way is to deploy the `dist` folder to a static host like GitHub Pages, Vercel, or Netlify. Ensure the site is served over HTTPS.
 2.  **Meta Quest Browser**: Open the deployed URL in the Meta Quest Browser.
-3.  **Permissions**:
-    - When prompted, allow "Immersive Web" or "VR" session.
-    - Allow "Camera Access" when requested for QR scanning.
+## Meta Quest 3 Device Setup & Settings
+
+To ensure all features (AR, Passthrough, Camera/QR) work correctly, follow these specific settings on your headset:
+
+### 1. Enable Developer Mode
+*   Open the **Meta Horizon** app on your phone.
+*   Go to **Menu** > **Devices** > Select your Headset.
+*   Tap **Headset Settings** > **Developer Mode** > Toggle **On**.
+*   Restart your headset.
+
+### 2. Browser Permissions (Critical for QR Scanning)
+The Meta Quest Browser needs explicit permission to access the camera.
+*   **On First Launch**: When you open the app, you should see a popup: *"Allow [URL] to use your camera?"* -> Click **Allow**.
+*   **If you missed the popup / denied it**:
+    1.  Put on your headset.
+    2.  Go to **Settings** (System Settings).
+    3.  Select **Apps** > **Installed Apps**.
+    4.  Find **Meta Quest Browser** in the list.
+    5.  Select **Permissions**.
+    6.  Toggle **Camera** to **ON**.
+    7.  Toggle **Spatial Data** to **ON** (if available, for better AR stability).
+
+### 3. WebXR Flags (Optional / Troubleshooting)
+If AR mode doesn't start or passthrough is black:
+1.  Open Meta Quest Browser.
+2.  Type `chrome://flags` in the address bar.
+3.  Search for **"WebXR"**.
+4.  Ensure **WebXR Incubations** is **Enabled**.
+5.  Restart the browser.
+
+### 4. Clear Site Permissions
+If you are stuck in a "Denied" state:
+1.  In Meta Quest Browser, click the **Lock Icon** (🔒) next to the URL bar.
+2.  Click **Permissions**.
+3.  Click **Reset Permissions** for this site.
+4.  Reload the page and click **Allow** when prompted.
 
 ## QR Scanning Best Practices
 
