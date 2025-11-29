@@ -22,7 +22,7 @@ export class XRSessionManager {
     async startSession() {
         if (this.session) return;
 
-        const sessionInit = { requiredFeatures: ['local-floor', 'hit-test', 'camera-access'] };
+        const sessionInit = { requiredFeatures: ['local-floor', 'hit-test'] };
         try {
             // @ts-ignore
             const session = await navigator.xr?.requestSession('immersive-ar', sessionInit);

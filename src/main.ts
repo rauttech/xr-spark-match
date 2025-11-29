@@ -6,6 +6,26 @@ import { UIManager } from './xr/ui';
 import * as THREE from 'three';
 
 async function init() {
+  // Debug Console Logic
+  const debugConsole = document.getElementById('debug-console');
+  if (debugConsole) {
+    debugConsole.style.display = 'block';
+    const originalLog = console.log;
+    const originalError = console.error;
+
+    console.log = (...args) => {
+      originalLog(...args);
+      debugConsole.innerHTML += `<div>[LOG] ${args.join(' ')}</div>`;
+      debugConsole.scrollTop = debugConsole.scrollHeight;
+    };
+
+    console.error = (...args) => {
+      originalError(...args);
+      debugConsole.innerHTML += `<div style="color: red;">[ERR] ${args.join(' ')}</div>`;
+      debugConsole.scrollTop = debugConsole.scrollHeight;
+    };
+  }
+
   const xrManager = new XRSessionManager();
   const passthroughManager = new PassthroughManager();
   const cameraManager = new CameraManager();

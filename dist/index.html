@@ -1,25 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>XR Spark Match Mode</title>
-    <script type="module" crossorigin src="/assets/index-DaZTFqUd.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BzwqOKiP.css">
-  </head>
-  <body>
-    <div id="app"></div>
-    <div id="overlay">
-      <div id="session-info" class="ui-panel">
-        <h3>XR Spark Match</h3>
-        <p>Status: <span id="status-text">Ready</span></p>
-        <button id="enter-ar">Enter AR Match Mode</button>
-      </div>
-      <div id="match-reasoning" class="ui-panel">
-        <h4>Match Insight</h4>
-        <p id="reasoning-text">...</p>
-      </div>
-    </div>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XR Spark Match - Quest 3</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      z-index: 10;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 20px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-CAjXGrQj.js"></script>
+</head>
+
+<body>
+  <div id="overlay">
+    <button id="start-xr">Start AR Session</button>
+  </div>
+  <div id="debug-console"
+    style="position: fixed; bottom: 0; left: 0; width: 100%; height: 200px; background: rgba(0,0,0,0.8); color: lime; overflow-y: scroll; font-family: monospace; z-index: 100; pointer-events: none; display: none;">
+  </div>
+</body>
+
 </html>
