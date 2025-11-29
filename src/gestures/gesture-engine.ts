@@ -1,27 +1,30 @@
 import * as THREE from "three";
 import { CardManager } from "../scene/card-manager";
+import { AudioManager } from "../audio/audio-manager";
 
 export class GestureEngine {
   private renderer: THREE.WebGLRenderer;
-  private camera: THREE.Camera;
+
   private cardManager: CardManager;
+  private audioManager: AudioManager;
   private raycaster: THREE.Raycaster;
 
   constructor(
     renderer: THREE.WebGLRenderer,
-    camera: THREE.Camera,
     cardManager: CardManager,
+    audioManager: AudioManager
   ) {
     this.renderer = renderer;
-    this.camera = camera;
+
     this.cardManager = cardManager;
+    this.audioManager = audioManager;
     this.raycaster = new THREE.Raycaster();
   }
 
   // State for gestures
   private lastHandPosition: THREE.Vector3 | null = null;
   private isPinching: boolean = false;
-  private pinchStartTime: number = 0;
+
   private grabbedObject: THREE.Group | null = null;
 
   update(frame: XRFrame) {
@@ -129,6 +132,9 @@ export class GestureEngine {
 
   triggerGesture(name: string) {
     console.log(`Gesture: ${name}`);
+    if (name.startsWith('swipe')) {
+      this.audioManager.playSwipeSound();
+    }
     // Hook into CardManager or other systems
   }
 }

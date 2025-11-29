@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { AudioManager } from "../audio/audio-manager";
+import { AudioManager } from "../../audio/audio-manager";
 
 export class SceneInit {
   public scene: THREE.Scene;
@@ -25,7 +25,7 @@ export class SceneInit {
     );
     this.camera.position.set(0, 1.6, 0); // Default user height
 
-    this.audioManager = new AudioManager(this.camera);
+    this.audioManager = AudioManager.getInstance();
 
     // Enable transparency for passthrough
     this.scene.background = null;

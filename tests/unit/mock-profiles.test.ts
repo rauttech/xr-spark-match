@@ -12,6 +12,9 @@ describe('MockProfiles', () => {
         const p = profiles[0];
         expect(p.id).toBeDefined();
         expect(p.name).toBeDefined();
+        expect(p.domain).toBeDefined();
+        expect(p.experienceLevel).toBeDefined();
+        expect(p.location).toBeDefined();
         expect(p.compatibilityScore).toBeGreaterThanOrEqual(0);
     });
 });

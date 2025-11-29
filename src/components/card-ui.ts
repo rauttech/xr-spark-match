@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { getMatchColor } from "../utils/color";
 import { Profile } from "../services/mock-profiles";
 
 export class CardUI {
@@ -6,57 +7,89 @@ export class CardUI {
     const group = new THREE.Group();
     group.userData = { profileId: profile.id, isCard: true };
 
-    // Background
-    const geometry = new THREE.PlaneGeometry(0.4, 0.6);
+    // Background (Glass-like effect)
+    const geometry = new THREE.PlaneGeometry(0.5, 0.7); // Slightly larger
     const material = new THREE.MeshBasicMaterial({
-      color: profile.color,
+      color: getMatchColor(profile.compatibilityScore),
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.85, // More opaque for readability
     });
     const plane = new THREE.Mesh(geometry, material);
+
+    // Border
+    const borderGeo = new THREE.EdgesGeometry(geometry);
+    const borderMat = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
+    const border = new THREE.LineSegments(borderGeo, borderMat);
+    group.add(border);
+
     group.add(plane);
 
     // Text (High Resolution Canvas)
     const canvas = document.createElement("canvas");
     canvas.width = 1024;
-    canvas.height = 1024;
+    canvas.height = 1400; // Taller canvas
     const ctx = canvas.getContext("2d")!;
 
-    // White background for text area
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, 1024, 1024);
+    // White background for text area (rounded corners simulated by drawing rect)
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.fillRect(50, 50, 924, 1300);
 
     // Text Styling
-    ctx.fillStyle = "#1a1a1a"; // Dark grey for better contrast
     ctx.textAlign = "center";
 
     // Name
-    ctx.font = "bold 120px Inter, Arial";
-    ctx.fillText(profile.name, 512, 200);
+    ctx.fillStyle = "#1a1a1a";
+    ctx.font = "bold 130px Inter, Arial";
+    ctx.fillText(profile.name, 512, 250);
 
     // Role
     ctx.fillStyle = "#4a4a4a";
-    ctx.font = "80px Inter, Arial";
-    ctx.fillText(profile.role, 512, 350);
+    ctx.font = "italic 90px Inter, Arial";
+    ctx.fillText(profile.role, 512, 400);
 
-    // Match Score
-    ctx.fillStyle = profile.compatibilityScore > 80 ? "#e91e63" : "#2196f3"; // Pink for high match, Blue for others
-    ctx.font = "bold 100px Inter, Arial";
-    ctx.fillText(`Match: ${profile.compatibilityScore}%`, 512, 550);
+    // Separator
+    ctx.strokeStyle = "#cccccc";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(100, 450);
+    ctx.lineTo(924, 450);
+    ctx.stroke();
+
+    // Match Score (advanced colour)
+    const matchHex = getMatchColor(profile.compatibilityScore);
+    ctx.fillStyle = matchHex;
+    ctx.font = "bold 110px Inter, Arial";
+    ctx.fillText(`Match: ${profile.compatibilityScore}%`, 512, 600);
+
+    // Details: Domain, Experience, Location
+    ctx.fillStyle = "#666666";
+    ctx.font = "50px Inter, Arial";
+    ctx.fillText(`${profile.domain} • ${profile.experienceLevel}`, 512, 700);
+    ctx.fillText(`${profile.location}`, 512, 770);
+
+    // Tags
+    if (profile.tags && profile.tags.length > 0) {
+      ctx.font = "60px Inter, Arial";
+      ctx.fillStyle = "#333333";
+      let y = 800;
+      profile.tags.forEach((tag: string) => {
+        ctx.fillText(`#${tag}`, 512, y);
+        y += 80;
+      });
+    }
 
     const texture = new THREE.CanvasTexture(canvas);
-    // Anisotropy helps texture look sharp at oblique angles
     texture.anisotropy = 16;
 
-    const textGeo = new THREE.PlaneGeometry(0.35, 0.35);
+    const textGeo = new THREE.PlaneGeometry(0.45, 0.61); // Adjusted to fit background
     const textMat = new THREE.MeshBasicMaterial({
       map: texture,
       transparent: true,
     });
     const textMesh = new THREE.Mesh(textGeo, textMat);
     textMesh.position.z = 0.01;
-    textMesh.position.y = 0.05;
+    textMesh.position.y = 0.0;
     group.add(textMesh);
 
     return group;

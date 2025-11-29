@@ -1,4 +1,7 @@
+// Author: Deepak Raut
 import "./styles/main.css";
+import { QRScanner } from "./components/qr-scanner";
+import { ProfileService } from "./services/profile-service";
 import { XRSessionManager } from "./core/webxr/xr-session";
 import { SceneInit } from "./core/webxr/scene-init";
 import { Renderer } from "./scene/renderer";
@@ -13,6 +16,7 @@ class App {
   private cardManager: CardManager;
   private gestureEngine: GestureEngine;
   private zoneState: ZoneState;
+
 
   constructor() {
     // 1. Setup DOM and Canvas
@@ -31,19 +35,32 @@ class App {
       this.sceneInit.audioManager
     );
 
+    // Load Audio
+    this.sceneInit.audioManager.load('spark', '/audio/spark.wav');
+    this.sceneInit.audioManager.load('hover', '/audio/hover.wav');
+
     this.gestureEngine = new GestureEngine(
       this.renderer.renderer,
-      this.sceneInit.camera,
-      this.cardManager
+      this.cardManager,
+      this.sceneInit.audioManager
     );
 
     // 4. Setup XR Session
     this.xrSession = new XRSessionManager(
-      this.renderer.renderer,
-      this.sceneInit.camera,
+      this.renderer.renderer
     );
 
     this.init();
+    // Initialize QR scanner
+    new QRScanner(async (data: string) => {
+      try {
+        const profile = await ProfileService.getProfile(data);
+        // Add the scanned profile as a new card
+        this.cardManager.addProfileCard(profile);
+      } catch (e) {
+        console.error('Failed to fetch profile for QR data', e);
+      }
+    });
   }
 
   private init() {

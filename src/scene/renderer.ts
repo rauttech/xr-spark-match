@@ -3,11 +3,11 @@ import { StatsMonitor } from "../core/stats-monitor";
 
 export class Renderer {
   public renderer: THREE.WebGLRenderer;
-  private canvas: HTMLCanvasElement;
+
   private stats: StatsMonitor;
 
   constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas;
+
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
